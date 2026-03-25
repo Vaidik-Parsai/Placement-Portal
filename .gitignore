@@ -1,0 +1,18 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Database files
+instance/
+*.db
+
+# Virtual environment
+venv/
+.env
+
+# macOS junk
+.DS_Store
+
+# Any other temporary files
+*.download
+*.enc
