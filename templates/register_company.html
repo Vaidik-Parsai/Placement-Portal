@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white text-center py-3">
+                <h4 class="mb-0">Company Registration</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="alert alert-info py-2">
+                    <small><i class="bi bi-info-circle"></i> Note: Your account will require Admin approval before you can post placement drives.</small>
+                </div>
+
+                <form method="POST">
+                    <h6 class="text-primary border-bottom pb-2">Login Credentials</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" placeholder="e.g. google_recruitment" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+
+                    <h6 class="text-primary border-bottom pb-2 mt-4">Company Profile</h6>
+                    <div class="mb-3">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" name="company_name" class="form-control" placeholder="e.g. Google India" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">HR Contact (Email/Phone)</label>
+                        <input type="text" name="hr_contact" class="form-control" placeholder="e.g. hr@company.com" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Website URL</label>
+                        <input type="url" name="website" class="form-control" placeholder="https://www.company.com">
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-dark">Submit Registration</button>
+                        <a href="{{ url_for('register_choice') }}" class="btn btn-link btn-sm text-muted">Go Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

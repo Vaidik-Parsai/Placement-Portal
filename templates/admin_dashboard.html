@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4">Institute Placement Cell Dashboard</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 shadow-sm">
+                <h5>{{ stats.total_students }}</h5><p class="mb-0">Students</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 shadow-sm">
+                <h5>{{ stats.total_companies }}</h5><p class="mb-0">Companies</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white p-3 shadow-sm">
+                <h5>{{ stats.total_drives }}</h5><p class="mb-0">Drives</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3 shadow-sm">
+                <h5>{{ stats.total_apps }}</h5><p class="mb-0">Applications</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-primary">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('admin_dashboard') }}" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="search_query" class="form-control" placeholder="Search by name, roll no, or company name..." value="{{ search_query }}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#active">Active Users</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pending">Pending Items</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#blacklist">Blacklist</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#active-drives">Active Drives</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#applications">Applications</button></li>
+        {% if search_query %}<li class="nav-item"><button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#search">Search Results</button></li>{% endif %}
+    </ul>
+
+    <div class="tab-content border border-top-0 p-4 bg-white shadow-sm mb-5">
+        
+        <div class="tab-pane fade show active" id="active">
+            <h4>Active Students</h4>
+            <table class="table table-sm">
+                {% for s in active_students %}
+                <tr><td>{{ s.full_name }} ({{ s.roll_no }})</td><td><a href="{{ url_for('blacklist', role='student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Blacklist</a></td><td><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Review</a></td></tr>
+                {% endfor %}
+            </table>
+            <h4 class="mt-4">Active Companies</h4>
+            <table class="table table-sm">
+                {% for c in active_companies %}
+                <tr><td>{{ c.company_name }}</td><td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-success btn-sm">Review</a></td></tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="tab-pane fade" id="pending">
+            <h4>Pending Companies</h4>
+            {% for c in pending_companies %}
+                <div class="d-flex justify-content-between p-2 border-bottom">
+                    {{ c.company_name }}
+                    <a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-info btn-sm">Review</a>
+                    <a href="{{ url_for('approve_company',user_id=c.user_id)}}" class="btn btn-success btn-sm">Approve</a>
+                </div>
+            {% endfor %}
+            <h4 class="mt-4">Pending Drives</h4>
+            {% for d in pending_drives %}
+                <div class="d-flex justify-content-between p-2 border-bottom">
+                    {{ d.job_title }} ({{ d.company_id }})
+                    <a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-info btn-sm">Review</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="tab-pane fade" id="blacklist">
+            <h4>Blacklisted Students</h4>
+            {% for s in blacklisted_students %}
+                <div class="d-flex justify-content-between p-2 border-bottom text-muted">
+                    {{ s.full_name }}
+                    <a href="{{ url_for('unblacklist', role='student', id=s.id) }}" class="btn btn-sm btn-outline-success">Un-blacklist</a>
+                </div>
+            {% endfor %}
+            <h4>Blacklisted Companies</h4>
+            {% for c in blacklisted_companies %}
+                <div class="d-flex justify-content-between p-2 border-bottom text-muted">
+                    {{ c.company_name }}
+                    <a href="{{ url_for('unblacklist', role='company', id=c.id) }}" class="btn btn-sm btn-outline-success">Un-blacklist</a>
+                </div>
+            {% endfor %}
+        </div>
+
+       <div class="tab-pane fade" id="active-drives">
+    <h4>Active Placement Drives</h4>
+    {% for d in active_drives %}
+        <div class="d-flex justify-content-between p-2 border-bottom">
+            {{ d.job_title }} ({{ d.employer.company_name }})
+            <a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-info btn-sm">Review</a>
+        </div>
+    {% endfor %}
+    </div>
+
+    <div class="tab-pane fade" id="applications">
+    <h4>Recent Applications</h4>
+    {% for a in applications %}
+        <div class="d-flex justify-content-between p-2 border-bottom">
+            {{ a.applicant.full_name }} applied for {{ a.drive.job_title }} at {{ a.drive.employer.company_name }}
+            {# Uncomment when review_application route is ready:
+            <a href="{{ url_for('review_application', application_id=a.id) }}" class="btn btn-info btn-sm">Review</a>
+            #}
+        </div>
+    {% endfor %}
+    </div>
+
+        {% if search_query %}
+        <div class="tab-pane fade show active" id="search">
+            <h3>Results for "{{ search_query }}"</h3>
+            <table class="table table-sm">
+                <thead><tr><th>Type</th><th>Name</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for s in searched_students %}
+                    <tr>
+                        <td>Student</td>
+                        <td>{{ s.full_name }} ({{ s.roll_no }})</td>
+                        <td><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Review</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% for c in searched_companies %}
+                    <tr>
+                        <td>Company</td>
+                        <td>{{ c.company_name }}</td>
+                        <td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-success btn-sm">Review</a></td>
+                        <td><a href="{{ url_for('approve_company', user_id=c.user_id) }}" class="btn btn-success btn-sm">Approve</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

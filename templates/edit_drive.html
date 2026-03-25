@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">        
+    <h2>Edit Placement Drive</h2>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('edit_drive', drive_id=drive.id) }}">
+                <div class="mb-3">
+                    <label for="job_title" class="form-label">Job Title</label>
+                    <input type="text" class="form-control" id="job_title" name="job_title" value="{{ drive.job_title }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="job_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="job_description" name="job_description" rows="4" required>{{ drive.job_description }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="eligibility_criteria" class="form-label">Eligibility Criteria</label>
+                    <textarea class="form-control" id="eligibility_criteria" name="eligibility_criteria" rows="3" required>{{ drive.eligibility_criteria }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="application_deadline" class="form-label">Application Deadline</label>
+                    <input type="date" class="form-control" id="application_deadline" name="application_deadline" value="{{ drive.application_deadline }}" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Drive</button>
+                <a href="{{ url_for('company_dashboard') }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+
+
+{% endblock %}

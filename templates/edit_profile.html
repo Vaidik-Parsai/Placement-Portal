@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Edit Profile</h4>
+                <a href="{{ url_for('student_dashboard') }}" class="btn btn-sm btn-light text-primary">Back</a>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" value="{{ student.full_name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Roll Number</label>
+                        <input type="text" name="roll_no" class="form-control" value="{{ student.roll_no }}" readonly>
+                        <small class="text-muted">Roll number cannot be changed. Contact admin for corrections.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">CGPA</label>
+                        <input type="number" step="0.01" name="cgpa" class="form-control" value="{{ student.cgpa }}" required>
+                    </div>
+
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
