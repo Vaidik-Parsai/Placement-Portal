@@ -3,18 +3,18 @@
 {% block content %}
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Student Profile Review</h2>
-        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <h2 class="border-0 mb-0">Student Profile Review</h2>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Back to Dashboard
         </a>
     </div>
 
     <div class="row">
         <div class="col-md-4">
-            <div class="card shadow-sm mb-4">
+            <div class="card mb-4">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <i class="bi bi-person-circle display-1 text-primary"></i>
+                        <i class="bi bi-person-circle display-1"></i>
                     </div>
                     <h4>{{ student.full_name }}</h4>
                     <p class="text-muted">Roll No: {{ student.roll_no }}</p>
@@ -24,8 +24,8 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-dark text-white">Quick Actions</div>
+            <div class="card">
+                <div class="card-header">Quick Actions</div>
                 <div class="card-body">
                     {% if not student.is_blacklisted %}
                         <a href="{{ url_for('blacklist', role='student', id=student.id) }}" class="btn btn-danger w-100 mb-2">Blacklist Student</a>
@@ -37,8 +37,8 @@
         </div>
 
         <div class="col-md-8">
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white"><strong>Academic & Contact Details</strong></div>
+            <div class="card mb-4">
+                <div class="card-header"><i class="bi bi-mortarboard"></i> Academic &amp; Contact Details</div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-sm-4 text-muted">Full Name:</div>
@@ -46,7 +46,7 @@
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-4 text-muted">CGPA:</div>
-                        <div class="col-sm-8">{{ student.cgpa }}</div>
+                        <div class="col-sm-8 font-monospace">{{ student.cgpa }}</div>
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-4 text-muted">Resume:</div>
@@ -61,8 +61,8 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm">
-                <div class="card-header bg-white"><strong>Application History</strong></div>
+            <div class="card">
+                <div class="card-header"><i class="bi bi-journal-check"></i> Application History</div>
                 <div class="card-body">
                     {% if student.applications %}
                         <table class="table table-hover">

@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
+<div class="row justify-content-center mt-4">
     <div class="col-md-5">
-        <div class="card shadow-sm border-0">
+        <div class="card">
             <div class="card-header bg-dark text-white text-center py-3">
-                <h4 class="mb-0">Company Registration</h4>
+                <h4 class="mb-0"><i class="bi bi-building"></i> Company Registration</h4>
             </div>
             <div class="card-body p-4">
                 <div class="alert alert-info py-2">
-                    <small><i class="bi bi-info-circle"></i> Note: Your account will require Admin approval before you can post placement drives.</small>
+                    <small><i class="bi bi-info-circle"></i> Your account will require Admin approval before you can post placement drives.</small>
                 </div>
 
                 <form method="POST">
-                    <h6 class="text-primary border-bottom pb-2">Login Credentials</h6>
+                    <h6 class="text-muted text-uppercase small border-bottom pb-2" style="letter-spacing:.05em;">Login Credentials</h6>
                     <div class="mb-3">
                         <label class="form-label">Username</label>
                         <input type="text" name="username" class="form-control" placeholder="e.g. google_recruitment" required>
@@ -23,7 +23,7 @@
                         <input type="password" name="password" class="form-control" required>
                     </div>
 
-                    <h6 class="text-primary border-bottom pb-2 mt-4">Company Profile</h6>
+                    <h6 class="text-muted text-uppercase small border-bottom pb-2 mt-4" style="letter-spacing:.05em;">Company Profile</h6>
                     <div class="mb-3">
                         <label class="form-label">Company Name</label>
                         <input type="text" name="company_name" class="form-control" placeholder="e.g. Google India" required>
@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-dark">Submit Registration</button>
+                        <button type="submit" class="btn btn-primary">Submit Registration</button>
                         <a href="{{ url_for('register_choice') }}" class="btn btn-link btn-sm text-muted">Go Back</a>
                     </div>
                 </form>
