@@ -1,73 +1,66 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row mb-4 align-items-center">
-        <div class="col-md-8">
-            <h2 class="border-0 mb-1">Welcome, {{ company.company_name }}</h2>
-            <p class="text-muted mb-0">Manage your recruitment drives and track applications.</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <a href="{{ url_for('create_drive') }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Create New Drive
-            </a>
-        </div>
+{% set totals = namespace(applications=0, pending=0, active=0) %}
+{% for drive in drives %}
+    {% set totals.applications = totals.applications + (drive.applications | length) %}
+    {% if drive.status == 'Pending' %}{% set totals.pending = totals.pending + 1 %}{% endif %}
+    {% if drive.status == 'Approved' %}{% set totals.active = totals.active + 1 %}{% endif %}
+{% endfor %}
+<section class="page-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="h2">Welcome, {{ company.company_name }}</h1>
+        <p>Manage your recruitment drives and track applicants.</p>
     </div>
+    <a href="{{ url_for('create_drive') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Create new drive
+    </a>
+</section>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4"><span class="text-muted">HR Contact</span><br><strong>{{ company.hr_contact }}</strong></div>
-                <div class="col-md-4"><span class="text-muted">Website</span><br><a href="{{ company.website }}" target="_blank">{{ company.website }}</a></div>
-                <div class="col-md-4">
-                    <span class="text-muted">Status</span><br>
-                    <span class="badge bg-success">Approved &amp; Active</span>
-                </div>
-            </div>
-        </div>
-    </div>
+<section class="row g-3 mb-4" aria-label="Recruitment overview">
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon"><i class="bi bi-briefcase"></i></span><div><p class="metric-value">{{ drives | length }}</p><p class="metric-label">Total drives</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon success"><i class="bi bi-check2-circle"></i></span><div><p class="metric-value">{{ totals.active }}</p><p class="metric-label">Active drives</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon warning"><i class="bi bi-hourglass-split"></i></span><div><p class="metric-value">{{ totals.pending }}</p><p class="metric-label">Pending reviews</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon info"><i class="bi bi-people"></i></span><div><p class="metric-value">{{ totals.applications }}</p><p class="metric-label">Total applications</p></div></div></div></div>
+</section>
 
-    <div class="card">
-        <div class="card-header"><i class="bi bi-briefcase"></i> Your Placement Drives</div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Job Title</th>
-                        <th>Deadline</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                        <th>Edit Drive</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for drive in drives %}
-                    <tr>
-                        <td><strong>{{ drive.job_title }}</strong></td>
-                        <td class="font-monospace">{{ drive.application_deadline }}</td>
-                        <td>
-                            <span class="badge 
-                                {% if drive.status == 'Approved' %}bg-success
-                                {% elif drive.status == 'Rejected' %}bg-danger
-                                {% else %}bg-warning{% endif %}">
-                                {{ drive.status }}
-                            </span>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('view_application', drive_id=drive.id) }}" class="btn btn-sm btn-outline-info">View Applicants</a>
-                        </td>
-                        <td>
-                            <a href="{{ url_for('edit_drive', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">Edit</a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No drives created yet. Click "Create New Drive" to start.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+<section class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-12 col-md-4"><span class="small text-muted">HR contact</span><div class="fw-semibold">{{ company.hr_contact }}</div></div>
+            <div class="col-12 col-md-4"><span class="small text-muted">Website</span><div>{% if company.website %}<a href="{{ company.website }}" target="_blank" rel="noopener noreferrer">{{ company.website }}</a>{% else %}<span class="text-muted">Not provided</span>{% endif %}</div></div>
+            <div class="col-12 col-md-4"><span class="small text-muted">Account status</span><div><span class="badge bg-success">Approved &amp; active</span></div></div>
         </div>
     </div>
-</div>
+</section>
+
+<section class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-briefcase me-2"></i>Your placement drives</span>
+        <span class="badge bg-light">{{ totals.applications }} applicants</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th scope="col">Job title</th><th scope="col">Deadline</th><th scope="col">Status</th><th scope="col">Applicants</th><th scope="col">Actions</th></tr></thead>
+            <tbody>
+                {% for drive in drives %}
+                <tr>
+                    <td><strong>{{ drive.job_title }}</strong></td>
+                    <td>{{ drive.application_deadline }}</td>
+                    <td><span class="badge {% if drive.status == 'Approved' %}bg-success{% elif drive.status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">{{ drive.status }}</span></td>
+                    <td>{{ drive.applications | length }}</td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('view_application', drive_id=drive.id) }}" class="btn btn-sm btn-outline-primary">View applicants</a>
+                            <a href="{{ url_for('edit_drive', drive_id=drive.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="py-5 text-center text-muted">No drives created yet. Create your first drive to get started.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
 {% endblock %}

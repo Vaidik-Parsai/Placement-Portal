@@ -1,31 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container-fluid">
-    <h2 class="mb-4">Institute Placement Cell Dashboard</h2>
+<section class="page-heading">
+    <h1 class="h2">Institute placement dashboard</h1>
+    <p>Monitor participation, review pending items, and manage placement activity.</p>
+</section>
 
-    <div class="row mb-4 g-3">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white p-3">
-                <h5>{{ stats.total_students }}</h5><p class="mb-0">Students</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white p-3">
-                <h5>{{ stats.total_companies }}</h5><p class="mb-0">Companies</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white p-3">
-                <h5>{{ stats.total_drives }}</h5><p class="mb-0">Drives</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark p-3">
-                <h5>{{ stats.total_apps }}</h5><p class="mb-0">Applications</p>
-            </div>
-        </div>
-    </div>
+<div class="row g-3 mb-4">
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon"><i class="bi bi-people"></i></span><div><p class="metric-value">{{ stats.total_students }}</p><p class="metric-label">Students</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon success"><i class="bi bi-building"></i></span><div><p class="metric-value">{{ stats.total_companies }}</p><p class="metric-label">Companies</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon info"><i class="bi bi-briefcase"></i></span><div><p class="metric-value">{{ stats.total_drives }}</p><p class="metric-label">Placement drives</p></div></div></div></div>
+    <div class="col-12 col-sm-6 col-xl-3"><div class="card metric-card"><div class="card-body"><span class="metric-icon warning"><i class="bi bi-send"></i></span><div><p class="metric-value">{{ stats.total_apps }}</p><p class="metric-label">Applications</p></div></div></div></div>
+</div>
 
     <div class="card mb-4 border-primary">
         <div class="card-body">
@@ -40,114 +26,85 @@
         </div>
     </div>
 
-    <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#active">Active Users</button></li>
+    <ul class="nav nav-tabs flex-nowrap overflow-auto" id="adminTabs" role="tablist">
+        <li class="nav-item"><button class="nav-link {% if not search_query %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#active">Active Users</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#pending">Pending Items</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#blacklist">Blacklist</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#active-drives">Active Drives</button></li>
         <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#applications">Applications</button></li>
-        {% if search_query %}<li class="nav-item"><button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#search">Search Results</button></li>{% endif %}
+        {% if search_query %}<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#search">Search Results</button></li>{% endif %}
     </ul>
 
-    <div class="tab-content border border-top-0 p-4 mb-5">
+    <div class="tab-content border border-top-0 p-3 p-md-4 mb-5">
 
-        <div class="tab-pane fade show active" id="active">
-            <h4>Active Students</h4>
-            <table class="table table-sm">
+        <div class="tab-pane fade {% if not search_query %}show active{% endif %}" id="active">
+            <h2 class="h5 mb-3">Active students</h2>
+            <div class="table-responsive mb-4"><table class="table table-hover table-sm"><thead><tr><th scope="col">Student</th><th scope="col">Roll number</th><th scope="col">Actions</th></tr></thead><tbody>
                 {% for s in active_students %}
-                <tr><td>{{ s.full_name }} <span class="text-muted">({{ s.roll_no }})</span></td><td class="text-end"><a href="{{ url_for('blacklist', role='student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Blacklist</a></td><td><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-info btn-sm">Review</a></td></tr>
-                {% endfor %}
-            </table>
-            <h4 class="mt-4">Active Companies</h4>
-            <table class="table table-sm">
-                {% for c in active_companies %}
-                <tr><td>{{ c.company_name }}</td><td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-success btn-sm">Review</a></td></tr>
-                {% endfor %}
-            </table>
+                <tr><td>{{ s.full_name }}</td><td>{{ s.roll_no }}</td><td><div class="d-flex gap-2"><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-primary btn-sm">Review</a><a href="{{ url_for('blacklist', role='student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Blacklist</a></div></td></tr>
+                {% else %}<tr><td colspan="3" class="text-center text-muted">No active students.</td></tr>{% endfor %}
+            </tbody></table></div>
+            <h2 class="h5 mb-3">Active companies</h2>
+            <div class="table-responsive"><table class="table table-hover table-sm"><thead><tr><th scope="col">Company</th><th scope="col">Review</th></tr></thead><tbody>
+                {% for c in active_companies %}<tr><td>{{ c.company_name }}</td><td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-primary btn-sm">Review</a></td></tr>
+                {% else %}<tr><td colspan="2" class="text-center text-muted">No active companies.</td></tr>{% endfor %}
+            </tbody></table></div>
         </div>
 
         <div class="tab-pane fade" id="pending">
-            <h4>Pending Companies</h4>
-            {% for c in pending_companies %}
-                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                    {{ c.company_name }}
-                    <span>
-                        <a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-info btn-sm">Review</a>
-                        <a href="{{ url_for('approve_company',user_id=c.user_id)}}" class="btn btn-success btn-sm">Approve</a>
-                    </span>
-                </div>
-            {% endfor %}
-            <h4 class="mt-4">Pending Drives</h4>
-            {% for d in pending_drives %}
-                <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-                    {{ d.job_title }} <span class="text-muted">({{ d.company_id }})</span>
-                    <a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-info btn-sm">Review</a>
-                </div>
-            {% endfor %}
+            <h2 class="h5 mb-3">Pending companies</h2>
+            {% for c in pending_companies %}<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3 border-bottom"><strong>{{ c.company_name }}</strong><span class="d-flex gap-2"><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-primary btn-sm">Review</a><a href="{{ url_for('approve_company', user_id=c.user_id) }}" class="btn btn-success btn-sm">Approve</a></span></div>
+            {% else %}<p class="text-muted">No companies are waiting for approval.</p>{% endfor %}
+            <h2 class="h5 mt-4 mb-3">Pending drives</h2>
+            {% for d in pending_drives %}<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3 border-bottom"><span><strong>{{ d.job_title }}</strong> <span class="text-muted">({{ d.employer.company_name }})</span></span><a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-outline-primary btn-sm">Review drive</a></div>
+            {% else %}<p class="text-muted">No drives are waiting for review.</p>{% endfor %}
         </div>
 
         <div class="tab-pane fade" id="blacklist">
-            <h4>Blacklisted Students</h4>
-            {% for s in blacklisted_students %}
-                <div class="d-flex justify-content-between align-items-center p-2 border-bottom text-muted">
-                    {{ s.full_name }}
-                    <a href="{{ url_for('unblacklist', role='student', id=s.id) }}" class="btn btn-sm btn-outline-success">Un-blacklist</a>
-                </div>
-            {% endfor %}
-            <h4 class="mt-4">Blacklisted Companies</h4>
-            {% for c in blacklisted_companies %}
-                <div class="d-flex justify-content-between align-items-center p-2 border-bottom text-muted">
-                    {{ c.company_name }}
-                    <a href="{{ url_for('unblacklist', role='company', id=c.id) }}" class="btn btn-sm btn-outline-success">Un-blacklist</a>
-                </div>
-            {% endfor %}
+            <h2 class="h5 mb-3">Blacklisted students</h2>
+            {% for s in blacklisted_students %}<div class="d-flex justify-content-between align-items-center gap-2 py-3 border-bottom"><span>{{ s.full_name }}</span><a href="{{ url_for('unblacklist', role='student', id=s.id) }}" class="btn btn-sm btn-outline-success">Restore</a></div>
+            {% else %}<p class="text-muted">No blacklisted students.</p>{% endfor %}
+            <h2 class="h5 mt-4 mb-3">Blacklisted companies</h2>
+            {% for c in blacklisted_companies %}<div class="d-flex justify-content-between align-items-center gap-2 py-3 border-bottom"><span>{{ c.company_name }}</span><a href="{{ url_for('unblacklist', role='company', id=c.id) }}" class="btn btn-sm btn-outline-success">Restore</a></div>
+            {% else %}<p class="text-muted">No blacklisted companies.</p>{% endfor %}
         </div>
 
        <div class="tab-pane fade" id="active-drives">
-    <h4>Active Placement Drives</h4>
-    {% for d in active_drives %}
-        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-            {{ d.job_title }} <span class="text-muted">({{ d.employer.company_name }})</span>
-            <a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-info btn-sm">Review</a>
+            <h2 class="h5 mb-3">Active placement drives</h2>
+            {% for d in active_drives %}<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 py-3 border-bottom"><span><strong>{{ d.job_title }}</strong> <span class="text-muted">({{ d.employer.company_name }})</span></span><a href="{{ url_for('view_drive', drive_id=d.id) }}" class="btn btn-outline-primary btn-sm">Review</a></div>
+            {% else %}<p class="text-muted">No active placement drives.</p>{% endfor %}
         </div>
-    {% endfor %}
-    </div>
 
-    <div class="tab-pane fade" id="applications">
-    <h4>Recent Applications</h4>
-    {% for a in applications %}
-        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
-            {{ a.applicant.full_name }} applied for {{ a.drive.job_title }} at {{ a.drive.employer.company_name }}
-            {# Uncomment when review_application route is ready:
-            <a href="{{ url_for('review_application', application_id=a.id) }}" class="btn btn-info btn-sm">Review</a>
-            #}
+        <div class="tab-pane fade" id="applications">
+            <h2 class="h5 mb-3">Recent applications</h2>
+            {% for a in applications %}<div class="py-3 border-bottom"><strong>{{ a.applicant.full_name }}</strong> applied for {{ a.drive.job_title }} at {{ a.drive.employer.company_name }}</div>
+            {% else %}<p class="text-muted">No applications have been submitted yet.</p>{% endfor %}
         </div>
-    {% endfor %}
-    </div>
 
         {% if search_query %}
         <div class="tab-pane fade show active" id="search">
             <h3>Results for "{{ search_query }}"</h3>
-            <table class="table table-sm">
-                <thead><tr><th>Type</th><th>Name</th><th>Action</th></tr></thead>
+            <div class="table-responsive"><table class="table table-sm">
+                <thead><tr><th>Type</th><th>Name</th><th>Review</th><th>Approval</th></tr></thead>
                 <tbody>
                     {% for s in searched_students %}
                     <tr>
                         <td>Student</td>
                         <td>{{ s.full_name }} ({{ s.roll_no }})</td>
-                        <td><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-danger btn-sm">Review</a></td>
+                        <td><a href="{{ url_for('review_student', id=s.id) }}" class="btn btn-outline-primary btn-sm">Review</a></td>
+                        <td></td>
                     </tr>
                     {% endfor %}
                     {% for c in searched_companies %}
                     <tr>
                         <td>Company</td>
                         <td>{{ c.company_name }}</td>
-                        <td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-success btn-sm">Review</a></td>
+                        <td><a href="{{ url_for('review_company', id=c.id) }}" class="btn btn-outline-primary btn-sm">Review</a></td>
                         <td><a href="{{ url_for('approve_company', user_id=c.user_id) }}" class="btn btn-success btn-sm">Approve</a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+            </table></div>
         </div>
         {% endif %}
 

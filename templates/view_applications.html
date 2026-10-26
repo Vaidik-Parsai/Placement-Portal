@@ -1,98 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="border-0 mb-1">Applicants for: {{ drive.job_title }}</h2>
-            <p class="text-muted mb-0">Total Applicants: <span class="font-monospace">{{ applications|length }}</span></p>
-        </div>
-        <a href="{{ url_for('company_dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
-    </div>
+<section class="page-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div><h1 class="h2 mb-1">Applicants for {{ drive.job_title }}</h1><p>{{ drive.employer.company_name }} · {{ applications | length }} total applicants</p></div>
+    <a href="{{ url_for('company_dashboard') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to dashboard</a>
+</section>
 
-    <div class="card mb-4 border-success">
-        <div class="card-header bg-success">
-            <h5 class="mb-0"><i class="bi bi-patch-check"></i> Selected Candidates</h5>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Roll No</th>
-                        <th>CGPA</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% set selected_apps = applications | selectattr("application_status", "equalto", "Selected") | list %}
-                    {% for app in selected_apps %}
-                    <tr>
-                        <td><strong>{{ app.applicant.full_name }}</strong></td>
-                        <td>{{ app.applicant.roll_no }}</td>
-                        <td class="font-monospace">{{ app.applicant.cgpa }}</td>
-                        <td><span class="badge bg-success">Selected</span></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="text-center py-3 text-muted">No students selected yet.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+{% set selected_apps = applications | selectattr("application_status", "equalto", "Selected") | list %}
+<section class="card mb-4 border-success">
+    <div class="card-header"><i class="bi bi-patch-check me-2 text-success"></i>Selected candidates <span class="badge bg-success ms-2">{{ selected_apps | length }}</span></div>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead><tr><th scope="col">Student name</th><th scope="col">Roll number</th><th scope="col">CGPA</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+                {% for app in selected_apps %}
+                <tr><td><strong>{{ app.applicant.full_name }}</strong></td><td>{{ app.applicant.roll_no }}</td><td>{{ app.applicant.cgpa }}</td><td><span class="badge bg-success">Selected</span></td></tr>
+                {% else %}<tr><td colspan="4" class="py-4 text-center text-muted">No students selected yet.</td></tr>{% endfor %}
+            </tbody>
+        </table>
     </div>
+</section>
 
-    <div class="card">
-        <div class="card-header">
-            <i class="bi bi-people"></i> All Applicants
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover align-middle mb-0">
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Roll No</th>
-                        <th>CGPA</th>
-                        <th>Profile</th>
-                        <th>Current Status</th>
-                        <th class="text-center">Manage Selection</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for app in applications %}
-                    <tr>
-                        <td><strong>{{ app.applicant.full_name }}</strong></td>
-                        <td>{{ app.applicant.roll_no }}</td>
-                        <td><span class="badge bg-light">{{ app.applicant.cgpa }}</span></td>
-                        <td><a href="{{ url_for('review_student', id=app.applicant.id) }}" class="btn btn-outline-info btn-sm">Review</a></td>
-                        <td>
-                            <span class="badge 
-                                {% if app.application_status == 'Selected' %}bg-success
-                                {% elif app.application_status == 'Rejected' %}bg-danger
-                                {% elif app.application_status == 'Shortlisted' %}bg-warning
-                                {% else %}bg-info{% endif %}">
-                                {{ app.application_status }}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('update_application', app_id=app.id, status='Shortlisted') }}" class="btn btn-warning">Shortlist</a>
-                                <a href="{{ url_for('update_application', app_id=app.id, status='Selected') }}" class="btn btn-success">Select</a>
-                                <a href="{{ url_for('update_application', app_id=app.id, status='Rejected') }}" class="btn btn-danger">Reject</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center py-5 text-muted">
-                            No students have applied for this drive yet.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<section class="card">
+    <div class="card-header"><i class="bi bi-people me-2"></i>All applicants</div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th scope="col">Student name</th><th scope="col">Roll number</th><th scope="col">CGPA</th><th scope="col">Profile</th><th scope="col">Status</th><th scope="col">Manage selection</th></tr></thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td><strong>{{ app.applicant.full_name }}</strong></td>
+                    <td>{{ app.applicant.roll_no }}</td>
+                    <td>{{ app.applicant.cgpa }}</td>
+                    <td><a href="{{ url_for('review_student', id=app.applicant.id) }}" class="btn btn-outline-primary btn-sm">Review</a></td>
+                    <td><span class="badge {% if app.application_status == 'Selected' or app.application_status == 'Shortlisted' %}bg-success{% elif app.application_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">{{ app.application_status }}</span></td>
+                    <td>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ url_for('update_application', app_id=app.id, status='Shortlisted') }}" class="btn btn-outline-success btn-sm">Shortlist</a>
+                            <a href="{{ url_for('update_application', app_id=app.id, status='Selected') }}" class="btn btn-success btn-sm">Select</a>
+                            <a href="{{ url_for('update_application', app_id=app.id, status='Rejected') }}" class="btn btn-outline-danger btn-sm">Reject</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}<tr><td colspan="6" class="py-5 text-center text-muted">No students have applied for this drive yet.</td></tr>{% endfor %}
+            </tbody>
+        </table>
     </div>
-</div>
+</section>
 {% endblock %}

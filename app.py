@@ -1,16 +1,22 @@
 from models import db,User , Company , Student , Placement_Drive , Application
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, request, flash, send_from_directory
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from datetime import datetime
 from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.utils import secure_filename
 import click
 import os
+import uuid
 
 # Initialize Flask app and database
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///placement_portal.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False    
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+app.config['RESUME_UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'resumes')
 
 
 db.init_app(app)
@@ -20,11 +26,20 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id)) 
 
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_upload_too_large(error):
+    if request.endpoint == 'apply_drive' and request.view_args:
+        flash('The resume must be 5 MB or smaller.', 'danger')
+        return redirect(url_for('apply_drive', drive_id=request.view_args['drive_id']))
+    return 'The uploaded file exceeds the 5 MB limit.', 413
+
+
 # routes
 
 @app.route('/')
 def home():
-    return render_template('base.html')
+    return render_template('home.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -294,10 +309,19 @@ def manage_drive(drive_id, action):
 @app.route('/admin/review_student/<int:id>') # The URL path
 @login_required
 def review_student(id): # This function name MUST match the url_for string
-    if current_user.role not in ['admin', 'company']: 
+    if current_user.role not in ['admin', 'company']:
         return redirect(url_for('home'))
     
     student = Student.query.get_or_404(id)
+    if current_user.role == 'company':
+        company = Company.query.filter_by(user_id=current_user.id).first()
+        if not company or not Application.query.join(Placement_Drive).filter(
+            Application.student_id == student.id,
+            Placement_Drive.company_id == company.id,
+        ).first():
+            flash('You are not authorized to review this student.', 'danger')
+            return redirect(url_for('company_dashboard'))
+
     return render_template('review_student.html', student=student)
 
 
@@ -449,13 +473,17 @@ def student_dashboard():
                            applications=applications)
 
 
-@app.route('/student/apply/<int:drive_id>')
+@app.route('/student/apply/<int:drive_id>', methods=['GET', 'POST'])
 @login_required
 def apply_drive(drive_id):
     if current_user.role != 'student':
         return redirect(url_for('home'))
     
     student = Student.query.filter_by(user_id=current_user.id).first()
+    if student is None:
+        flash('Your student profile could not be found.', 'danger')
+        return redirect(url_for('home'))
+
     drive = Placement_Drive.query.get_or_404(drive_id)
 
     if drive.application_deadline < datetime.today().date() or drive.status != 'Approved':
@@ -467,11 +495,134 @@ def apply_drive(drive_id):
         flash('You have already applied for this drive.', 'info')
         return redirect(url_for('student_dashboard'))
 
-    new_application = Application(student_id=student.id, drive_id=drive_id, application_status='Applied')
-    db.session.add(new_application)
-    db.session.commit()
-    flash('Application submitted successfully!', 'success')
-    return redirect(url_for('student_dashboard'))
+    resume_available = bool(
+        student.resume_path
+        and os.path.isfile(os.path.join(app.config['RESUME_UPLOAD_FOLDER'], student.resume_path))
+    )
+
+    if request.method == 'POST':
+        if request.form.get('confirm_profile') != 'yes':
+            flash('Please confirm your profile details before applying.', 'danger')
+            return render_template(
+                'apply_preview.html',
+                student=student,
+                drive=drive,
+                resume_available=resume_available,
+            )
+
+        resume = request.files.get('resume')
+        has_new_resume = resume is not None and bool(resume.filename)
+        new_resume_filename = None
+
+        if has_new_resume:
+            safe_original_name = secure_filename(resume.filename)
+            if not safe_original_name.lower().endswith('.pdf'):
+                flash('Please upload your resume as a PDF file.', 'danger')
+                return render_template(
+                    'apply_preview.html',
+                    student=student,
+                    drive=drive,
+                    resume_available=resume_available,
+                )
+
+            if resume.stream.read(5) != b'%PDF-':
+                flash('The selected file does not appear to be a valid PDF.', 'danger')
+                return render_template(
+                    'apply_preview.html',
+                    student=student,
+                    drive=drive,
+                    resume_available=resume_available,
+                )
+            resume.stream.seek(0)
+            new_resume_filename = f'{uuid.uuid4().hex}.pdf'
+        elif not resume_available:
+            flash('Upload a PDF resume before submitting your application.', 'danger')
+            return render_template(
+                'apply_preview.html',
+                student=student,
+                drive=drive,
+                resume_available=resume_available,
+            )
+
+        resume_folder = app.config['RESUME_UPLOAD_FOLDER']
+        saved_resume_path = None
+        if new_resume_filename:
+            os.makedirs(resume_folder, exist_ok=True)
+            saved_resume_path = os.path.join(resume_folder, new_resume_filename)
+            resume.save(saved_resume_path)
+
+        if saved_resume_path:
+            student.resume_path = new_resume_filename
+        db.session.add(Application(
+            student_id=student.id,
+            drive_id=drive_id,
+            application_status='Applied',
+        ))
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            if saved_resume_path and os.path.isfile(saved_resume_path):
+                os.remove(saved_resume_path)
+            flash('You have already applied for this drive.', 'info')
+            return redirect(url_for('student_dashboard'))
+        except Exception:
+            db.session.rollback()
+            if saved_resume_path and os.path.isfile(saved_resume_path):
+                os.remove(saved_resume_path)
+            raise
+
+        flash('Application submitted successfully!', 'success')
+        return redirect(url_for('student_dashboard'))
+
+    return render_template(
+        'apply_preview.html',
+        student=student,
+        drive=drive,
+        resume_available=resume_available,
+    )
+
+
+@app.route('/student/<int:student_id>/resume')
+@login_required
+def download_student_resume(student_id):
+    student = Student.query.get_or_404(student_id)
+    authorized = False
+
+    if current_user.role == 'admin':
+        authorized = True
+    elif current_user.role == 'student':
+        authorized = student.user_id == current_user.id
+    elif current_user.role == 'company':
+        company = Company.query.filter_by(user_id=current_user.id).first()
+        authorized = bool(
+            company
+            and Application.query.join(Placement_Drive).filter(
+                Application.student_id == student.id,
+                Placement_Drive.company_id == company.id,
+            ).first()
+        )
+
+    if not authorized:
+        flash('You are not authorized to view this resume.', 'danger')
+        return redirect(url_for('home'))
+
+    if not student.resume_path:
+        flash('This student has not uploaded a resume.', 'warning')
+        return redirect(url_for('student_dashboard') if current_user.role == 'student' else url_for('home'))
+
+    filename = os.path.basename(student.resume_path)
+    resume_path = os.path.join(app.config['RESUME_UPLOAD_FOLDER'], filename)
+    if filename != student.resume_path or not os.path.isfile(resume_path):
+        flash('The resume file is unavailable. Please upload it again.', 'warning')
+        return redirect(url_for('student_dashboard') if current_user.role == 'student' else url_for('home'))
+
+    return send_from_directory(
+        app.config['RESUME_UPLOAD_FOLDER'],
+        filename,
+        as_attachment=True,
+        download_name='resume.pdf',
+    )
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -529,8 +680,5 @@ def initdb():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-
-
 
 

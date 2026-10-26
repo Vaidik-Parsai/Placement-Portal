@@ -1,84 +1,114 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="card mb-4">
-                <div class="card-body text-center">
-                    <i class="bi bi-person-circle fs-1 text-info"></i>
-                    <h5 class="mt-2">{{ student.full_name }}</h5>
-                    <p class="text-muted small">Roll No: {{ student.roll_no }}</p>
-                    <hr>
-                    <div class="d-flex justify-content-between px-2">
-                        <span class="text-muted">CGPA</span>
-                        <strong class="font-monospace">{{ student.cgpa }}</strong>
-                    </div>
-                    <a href="{{ url_for('edit_profile') }}" class="btn btn-sm btn-outline-primary w-100 mt-3">
-                        <i class="bi bi-pencil"></i> Edit Profile
-                    </a>
-                </div>
+{% set selections = applications | selectattr("application_status", "equalto", "Selected") | list %}
+<section class="page-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="h2">Welcome, {{ student.full_name }}</h1>
+        <p>Explore opportunities and keep track of your applications.</p>
+    </div>
+    <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary">
+        <i class="bi bi-pencil me-1"></i> Edit profile
+    </a>
+</section>
+
+<section class="row g-3 mb-4" aria-label="Application overview">
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <span class="metric-icon"><i class="bi bi-send"></i></span>
+                <div><p class="metric-value">{{ applications | length }}</p><p class="metric-label">Total applications</p></div>
             </div>
         </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <span class="metric-icon info"><i class="bi bi-briefcase"></i></span>
+                <div><p class="metric-value">{{ drives | length }}</p><p class="metric-label">Available drives</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-6 col-xl-4">
+        <div class="card metric-card">
+            <div class="card-body">
+                <span class="metric-icon success"><i class="bi bi-trophy"></i></span>
+                <div><p class="metric-value">{{ selections | length }}</p><p class="metric-label">Placement offers</p></div>
+            </div>
+        </div>
+    </div>
+</section>
 
-        <div class="col-md-9">
-
-            {% set selections = applications | selectattr("application_status", "equalto", "Selected") | list %}
-            {% if selections %}
-            <div class="card mb-4 border-success">
-                <div class="card-header bg-success">
-                    <h5 class="mb-0"><i class="bi bi-trophy"></i> Your Placement Offers</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        {% for app in selections %}
-                        <div class="col-md-6 mb-2">
-                            <div class="p-3 border rounded" style="border-color: var(--border) !important;">
-                                <h6 class="mb-1">{{ app.drive.job_title }}</h6>
-                                <p class="mb-0"><span class="text-muted">Company:</span> {{ app.drive.employer.company_name }}</p>
-                                <small class="text-muted">Selected on: {{ app.applied_on.strftime('%d %b %Y') if app.applied_on else 'N/A' }}</small>
-                            </div>
-                        </div>
-                        {% endfor %}
+<div class="row g-4">
+    <div class="col-12 col-xl-8">
+        {% if selections %}
+        <section class="card mb-4 border-success">
+            <div class="card-header"><i class="bi bi-trophy me-2 text-success"></i>Your placement offers</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    {% for app in selections %}
+                    <div class="col-12 col-md-6">
+                        <article class="h-100 rounded border p-3">
+                            <h3 class="h6 mb-1">{{ app.drive.job_title }}</h3>
+                            <p class="mb-2 text-muted">{{ app.drive.employer.company_name }}</p>
+                            <span class="small text-muted">Selected on {{ app.applied_on.strftime('%d %b %Y') if app.applied_on else 'N/A' }}</span>
+                        </article>
                     </div>
+                    {% endfor %}
                 </div>
             </div>
-            {% endif %}
+        </section>
+        {% endif %}
 
-            <h4 class="mb-3"><i class="bi bi-briefcase"></i> Active Placement Drives</h4>
-            <div class="row">
+        <section class="mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 class="h4 mb-1">Active placement drives</h2>
+                    <p class="mb-0 text-muted">Find a role that fits your goals.</p>
+                </div>
+                <span class="badge bg-light">{{ drives | length }} available</span>
+            </div>
+            <div class="row g-3">
                 {% for drive in drives %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100 border-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ drive.job_title }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">{{ drive.employer.company_name }}</h6>
-                            <p class="card-text small text-truncate text-muted">{{ drive.job_description }}</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="badge bg-light">Deadline: {{ drive.application_deadline }}</span>
-                                <a href="{{ url_for('apply_drive', drive_id=drive.id) }}" class="btn btn-primary btn-sm px-3">Apply Now</a>
+                <div class="col-12 col-md-6">
+                    <article class="card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <div class="mb-3">
+                                <h3 class="h5 mb-1">{{ drive.job_title }}</h3>
+                                <p class="mb-0 text-muted">{{ drive.employer.company_name }}</p>
+                            </div>
+                            <p class="small text-muted">{{ drive.job_description }}</p>
+                            <div class="mt-auto d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2">
+                                <span class="badge bg-light"><i class="bi bi-calendar-event"></i> Deadline: {{ drive.application_deadline }}</span>
+                                <a href="{{ url_for('apply_drive', drive_id=drive.id) }}" class="btn btn-primary">Apply now</a>
                             </div>
                         </div>
-                    </div>
+                    </article>
                 </div>
                 {% else %}
                 <div class="col-12">
-                    <div class="alert alert-info text-center">No new placement drives available at the moment.</div>
+                    <div class="card">
+                        <div class="card-body py-4 text-center">
+                            <span class="metric-icon mx-auto mb-3"><i class="bi bi-calendar2-check"></i></span>
+                            <h3 class="h5">No active drives right now</h3>
+                            <p class="mb-0 text-muted">Check back soon for new placement opportunities.</p>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
+        </section>
 
-            <h4 class="mt-4 mb-3"><i class="bi bi-journal-check"></i> Your Application Status</h4>
+        <section>
+            <div class="mb-3">
+                <h2 class="h4 mb-1">Your application status</h2>
+                <p class="mb-0 text-muted">Updates for the opportunities you have applied to.</p>
+            </div>
             <div class="card">
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
+                <div class="table-responsive">
+                    <table class="table table-hover">
                         <thead>
-                            <tr>
-                                <th>Company</th>
-                                <th>Role</th>
-                                <th>Applied Date</th>
-                                <th>Status</th>
-                            </tr>
+                            <tr><th scope="col">Company</th><th scope="col">Role</th><th scope="col">Applied date</th><th scope="col">Status</th></tr>
                         </thead>
                         <tbody>
                             {% for app in applications %}
@@ -87,25 +117,39 @@
                                 <td>{{ app.drive.job_title }}</td>
                                 <td class="font-monospace">{{ app.applied_on.strftime('%d %b %Y') if app.applied_on else 'N/A' }}</td>
                                 <td>
-                                    <span class="badge 
-                                        {% if app.application_status == 'Selected' %}bg-success
-                                        {% elif app.application_status == 'Rejected' %}bg-danger
-                                        {% elif app.application_status == 'Shortlisted' %}bg-warning
-                                        {% else %}bg-info{% endif %}">
+                                    <span class="badge {% if app.application_status == 'Selected' or app.application_status == 'Shortlisted' %}bg-success{% elif app.application_status == 'Rejected' %}bg-danger{% else %}bg-secondary{% endif %}">
                                         {{ app.application_status }}
                                     </span>
                                 </td>
                             </tr>
                             {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center py-3 text-muted">You haven't applied to any drives yet.</td>
-                            </tr>
+                            <tr><td colspan="4" class="py-4 text-center text-muted">You have not applied to any drives yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
+        </section>
+    </div>
+
+    <aside class="col-12 col-xl-4">
+        <section class="card">
+            <div class="card-header"><i class="bi bi-person-badge me-2"></i>Your profile</div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <span class="user-avatar"><i class="bi bi-person-fill"></i></span>
+                    <div><h2 class="h5 mb-1">{{ student.full_name }}</h2><span class="text-muted small">Student</span></div>
+                </div>
+                <hr>
+                <dl class="mb-0">
+                    <div class="d-flex justify-content-between gap-3 mb-2"><dt class="text-muted fw-normal">Roll number</dt><dd class="mb-0 fw-semibold">{{ student.roll_no }}</dd></div>
+                    <div class="d-flex justify-content-between gap-3"><dt class="text-muted fw-normal">CGPA</dt><dd class="mb-0 fw-semibold">{{ student.cgpa }}</dd></div>
+                </dl>
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary w-100 mt-4">
+                    <i class="bi bi-pencil me-1"></i> Update profile
+                </a>
+            </div>
+        </section>
     </div>
 </div>
 {% endblock %}

@@ -1,43 +1,44 @@
 {% extends "base.html" %}
+{% block title %}Create placement drive | Placement Portal{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-md-7">
-        <div class="card">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="bi bi-briefcase-fill"></i> Create Placement Drive</h4>
-            </div>
-            <div class="card-body">
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-7">
+        <section class="card">
+            <div class="card-body p-4 p-md-5">
+                <div class="page-heading mb-4">
+                    <h1 class="h3"><i class="bi bi-briefcase me-2 text-primary"></i>Create a placement drive</h1>
+                    <p>Share the role details so eligible students can review the opportunity.</p>
+                </div>
                 <form method="POST">
                     <div class="mb-3">
-                        <label class="form-label">Job Title</label>
-                        <input type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer Intern" required>
+                        <label for="job_title" class="form-label">Job title</label>
+                        <input id="job_title" type="text" name="job_title" class="form-control" placeholder="e.g. Software Engineer Intern" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Job Description</label>
-                        <textarea name="job_description" class="form-control" rows="4" placeholder="Mention roles, responsibilities, and salary details..." required></textarea>
+                        <label for="job_description" class="form-label">Job description</label>
+                        <textarea id="job_description" name="job_description" class="form-control" rows="5" placeholder="Describe responsibilities, requirements, and compensation details..." required></textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Eligibility Criteria</label>
-                        <input type="text" name="eligibility_criteria" class="form-control" placeholder="e.g. B.Tech CS/IT, 7.5+ CGPA, No Active Backlogs" required>
+                        <label for="eligibility_criteria" class="form-label">Eligibility criteria</label>
+                        <input id="eligibility_criteria" type="text" name="eligibility_criteria" class="form-control" placeholder="e.g. B.Tech CS/IT, 7.5+ CGPA, no active backlogs" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Application Deadline</label>
-                        <input type="date" name="application_deadline" class="form-control" required>
-                        <small class="text-muted">Students cannot apply after this date.</small>
+                        <label for="application_deadline" class="form-label">Application deadline</label>
+                        <input id="application_deadline" type="date" name="application_deadline" class="form-control" required>
+                        <div class="form-text">Students will not be able to apply after this date.</div>
                     </div>
 
-                    <hr>
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-4">
                         <a href="{{ url_for('company_dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary px-4">Post Drive for Approval</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i> Submit drive for approval</button>
                     </div>
                 </form>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock %}

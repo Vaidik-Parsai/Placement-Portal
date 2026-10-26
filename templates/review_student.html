@@ -52,7 +52,7 @@
                         <div class="col-sm-4 text-muted">Resume:</div>
                         <div class="col-sm-8">
                             {% if student.resume_path %}
-                                <a href="#" class="btn btn-sm btn-outline-primary">View Resume</a>
+                                <a href="{{ url_for('download_student_resume', student_id=student.id) }}" class="btn btn-sm btn-outline-primary">Download Resume</a>
                             {% else %}
                                 <span class="text-danger">No resume uploaded</span>
                             {% endif %}

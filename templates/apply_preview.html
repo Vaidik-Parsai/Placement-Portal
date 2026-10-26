@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Review application | Placement Portal{% endblock %}
+
+{% block content %}
+<section class="page-heading d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+    <div>
+        <h1 class="h2 mb-1">Review your application</h1>
+        <p>Check your profile and attach a resume before applying to {{ drive.job_title }}.</p>
+    </div>
+    <a href="{{ url_for('student_dashboard') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i> Back to opportunities
+    </a>
+</section>
+
+<div class="row g-4">
+    <div class="col-12 col-xl-7">
+        <section class="card mb-4">
+            <div class="card-header"><i class="bi bi-person-vcard me-2"></i>Profile preview</div>
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="user-avatar"><i class="bi bi-person-fill"></i></span>
+                    <div>
+                        <h2 class="h5 mb-1">{{ student.full_name }}</h2>
+                        <span class="text-muted">Student profile</span>
+                    </div>
+                </div>
+                <dl class="profile-preview-list mb-0">
+                    <div><dt>Full name</dt><dd>{{ student.full_name }}</dd></div>
+                    <div><dt>Roll number</dt><dd>{{ student.roll_no }}</dd></div>
+                    <div><dt>CGPA</dt><dd>{{ student.cgpa }}</dd></div>
+                </dl>
+                <a href="{{ url_for('edit_profile') }}" class="btn btn-outline-primary btn-sm mt-3">
+                    <i class="bi bi-pencil me-1"></i> Update profile
+                </a>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header"><i class="bi bi-briefcase me-2"></i>Opportunity details</div>
+            <div class="card-body">
+                <h2 class="h5 mb-1">{{ drive.job_title }}</h2>
+                <p class="text-muted mb-3">{{ drive.employer.company_name }}</p>
+                <div class="row g-3">
+                    <div class="col-12"><h3 class="h6">Description</h3><p class="text-muted mb-0">{{ drive.job_description }}</p></div>
+                    <div class="col-12 col-md-7"><h3 class="h6">Eligibility</h3><p class="text-muted mb-0">{{ drive.eligibility_criteria }}</p></div>
+                    <div class="col-12 col-md-5"><h3 class="h6">Application deadline</h3><p class="text-muted mb-0">{{ drive.application_deadline }}</p></div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <aside class="col-12 col-xl-5">
+        <section class="card">
+            <div class="card-header"><i class="bi bi-file-earmark-pdf me-2"></i>Resume and confirmation</div>
+            <div class="card-body">
+                {% if resume_available %}
+                <div class="resume-current mb-3">
+                    <i class="bi bi-file-earmark-check-fill"></i>
+                    <div>
+                        <strong>Resume ready</strong>
+                        <a href="{{ url_for('download_student_resume', student_id=student.id) }}" class="d-block small">View your current resume</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">Upload a PDF resume to continue with your application.</div>
+                {% endif %}
+
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="upload-zone resume-upload-zone mb-3">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                        <strong>{% if resume_available %}Replace your resume (optional){% else %}Upload your resume{% endif %}</strong>
+                        <span class="small">PDF only, up to 5 MB</span>
+                        <input class="form-control mt-2" type="file" id="resume" name="resume" accept=".pdf,application/pdf" {% if not resume_available %}required{% endif %}>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" value="yes" id="confirm_profile" name="confirm_profile" required>
+                        <label class="form-check-label" for="confirm_profile">
+                            I confirm that my profile details and resume are current and accurate.
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="bi bi-send me-1"></i> Confirm and apply
+                    </button>
+                    <p class="small text-muted text-center mt-3 mb-0">Your resume is shared with the company for this application.</p>
+                </form>
+            </div>
+        </section>
+    </aside>
+</div>
+{% endblock %}

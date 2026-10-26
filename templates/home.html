@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Welcome | Placement Portal{% endblock %}
+
+{% block content %}
+<section class="home-hero">
+    <div class="home-hero-content">
+        <span class="home-eyebrow"><i class="bi bi-mortarboard me-2"></i>Career opportunities start here</span>
+        <h1>Connect talent with opportunity.</h1>
+        <p class="home-lead">A central place for students to discover placement drives and for companies to meet their next great hires.</p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            {% if current_user.is_authenticated %}
+                {% if current_user.role == 'student' %}
+                    <a href="{{ url_for('student_dashboard') }}" class="btn btn-primary btn-lg">Explore placement drives <i class="bi bi-arrow-right ms-1"></i></a>
+                {% elif current_user.role == 'company' %}
+                    <a href="{{ url_for('company_dashboard') }}" class="btn btn-primary btn-lg">Open company dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+                {% elif current_user.role == 'admin' %}
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary btn-lg">Open admin dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+                {% endif %}
+            {% else %}
+                <a href="{{ url_for('register_choice') }}" class="btn btn-primary btn-lg">Get started <i class="bi bi-arrow-right ms-1"></i></a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Sign in</a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="home-hero-art" aria-hidden="true">
+        <div class="hero-icon hero-icon-main"><i class="bi bi-briefcase-fill"></i></div>
+        <div class="hero-icon hero-icon-small"><i class="bi bi-person-check-fill"></i></div>
+        <div class="hero-orbit"></div>
+    </div>
+</section>
+
+<section class="home-features" aria-label="Portal features">
+    <div class="mb-4">
+        <h2 class="h3 mb-1">Everything you need to move forward</h2>
+        <p class="text-muted mb-0">A straightforward workflow for every step of campus hiring.</p>
+    </div>
+    <div class="row g-3">
+        <div class="col-12 col-md-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <span class="metric-icon"><i class="bi bi-search"></i></span>
+                    <h3 class="h5 mt-3">Discover opportunities</h3>
+                    <p class="text-muted mb-0">Browse active drives, check eligibility, and apply to roles that match your goals.</p>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <span class="metric-icon info"><i class="bi bi-kanban"></i></span>
+                    <h3 class="h5 mt-3">Track your progress</h3>
+                    <p class="text-muted mb-0">Keep your applications and their latest review status together in one dashboard.</p>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-md-4">
+            <article class="card h-100">
+                <div class="card-body">
+                    <span class="metric-icon success"><i class="bi bi-people"></i></span>
+                    <h3 class="h5 mt-3">Hire with confidence</h3>
+                    <p class="text-muted mb-0">Companies can create placement drives and manage applicants in one organized space.</p>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+
+{% if not current_user.is_authenticated %}
+<section class="home-signup-callout mt-4">
+    <div>
+        <h2 class="h4 mb-1">Ready to take the next step?</h2>
+        <p class="mb-0">Create a student or company account to get started.</p>
+    </div>
+    <a href="{{ url_for('register_choice') }}" class="btn btn-light">Choose account type <i class="bi bi-arrow-right ms-1"></i></a>
+</section>
+{% endif %}
+{% endblock %}
